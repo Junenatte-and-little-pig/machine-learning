@@ -1,6 +1,10 @@
 # -*- encoding: utf-8 -*-
 # numpy 1.15.4
+import matplotlib.pyplot as plt
 import pandas as pd
+# seaborn库是对matplotlib的封装，提供更加便捷的API用于数据可视化
+# https://blog.csdn.net/fenfenxhf/article/details/82859620
+import seaborn as sns
 
 
 def main():
@@ -20,6 +24,11 @@ def main():
     print("{0:*^50}".format("first 5 lines of df"))
     print(df.head())
     print("{0:*^50}".format(''))
+
+    # 将数据通过图表进行展示
+    # 参数size在新版本中变为height
+    sns.lmplot('population', 'profit', df, height=6, fit_reg=False)
+    plt.show()
 
 
 if __name__ == '__main__':
