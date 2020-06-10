@@ -24,6 +24,14 @@ def get_Y(df):
     return np.array(df.iloc[:, -1])
 
 
+# 特征缩放
+def normalize_feature(df):
+    # apply函数对DataFrame制定函数进行运算
+    # https://blog.csdn.net/stone0823/article/details/100008619
+    # std为标准差函数
+    return df.apply(lambda column: (column - column.mean()) / column.std())
+
+
 # 代价函数
 def lr_cost(theta, X, Y):
     # 样本数
@@ -33,6 +41,25 @@ def lr_cost(theta, X, Y):
     square_sum = inner.T @ inner
     cost = square_sum / (2 * m)
     return cost
+
+
+# 梯度计算
+def gradient(theta, X, Y):
+    m = X.shape[0]
+    inner = X.T @ (X @ theta - Y)
+    return inner / m
+
+
+# 梯度下降
+def batch_gradient_decent(theta, X, Y, epoch, alpha=0.01):
+    # epoch设置下降次数
+    # alpha设置学习率，常见0.01，0.003，0.001，...
+    cost_data = [lr_cost(theta, X, Y)]
+    _theta = theta.copy()
+    for _ in range(epoch):
+        _theta = _theta - alpha * gradient(_theta, X, Y)
+        cost_data.append(lr_cost(_theta, X, Y))
+    return _theta, cost_data
 
 
 def main():
@@ -72,6 +99,28 @@ def main():
     # 计算损失函数
     print(lr_cost(theta, X, Y))
     print("{0:*^50}".format(''))
+
+    # 完成一次梯度下降
+    print("{0:*^50}".format("result of gradient"))
+    epoch = 500
+    final_theta, cost_data = batch_gradient_decent(theta, X, Y, epoch)
+    print("final theta", final_theta)
+    print("final cost", cost_data[-1])
+    print("{0:*^50}".format(''))
+
+    # 绘制代价曲线
+    df_cost = pd.DataFrame(cost_data, columns=['cost'])
+    ax = sns.lineplot(data=df_cost)
+    plt.show()
+
+    # 绘制拟合直线
+    b = final_theta[0]  # intercept，Y轴上的截距
+    m = final_theta[1]  # slope，斜率
+
+    plt.scatter(df.population, df.profit, label="Training data")
+    plt.plot(df.population, df.population * m + b, label="Prediction")
+    plt.legend(loc=2)
+    plt.show()
 
 
 if __name__ == '__main__':
