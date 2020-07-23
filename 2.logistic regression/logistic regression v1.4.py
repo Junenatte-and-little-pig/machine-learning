@@ -29,7 +29,8 @@ def sigmoid(z):
 
 def cost(theta, X, Y):
     return np.mean(
-        -Y * np.log(sigmoid(X @ theta)) - (1 - Y) * np.log(sigmoid(X @ theta)))
+        -Y * np.log(sigmoid(X @ theta)) - (1 - Y) * np.log(
+            1 - sigmoid(X @ theta)))
 
 
 def gradient(theta, X, Y):
@@ -82,14 +83,13 @@ def main():
     print(classification_report(Y, y_pred))
     print("{0:*^50}".format(""))
 
-    print("{0:*^50}".format("decision boundary"))
     coef = -(res.x / res.x[2])  # find the equation
     x = np.arange(130, step=0.1)
     y = coef[0] + coef[1] * x
     sns.set(context="notebook", style="ticks", font_scale=1.5)
 
     sns.lmplot('exam1', 'exam2', hue='admitted', data=data,
-               size=6,
+               height=6,
                fit_reg=False,
                scatter_kws={"s": 25}
                )
@@ -99,7 +99,6 @@ def main():
     plt.ylim(0, 130)
     plt.title('Decision Boundary')
     plt.show()
-    print("{0:*^50}".format(""))
 
 
 if __name__ == '__main__':

@@ -35,7 +35,8 @@ def sigmoid(z):
 
 def cost(theta, X, Y):
     return np.mean(
-        -Y * np.log(sigmoid(X @ theta)) - (1 - Y) * np.log(sigmoid(X @ theta)))
+        -Y * np.log(sigmoid(X @ theta)) - (1 - Y) * np.log(
+            1 - sigmoid(X @ theta)))
 
 
 def gradient(theta, X, Y):

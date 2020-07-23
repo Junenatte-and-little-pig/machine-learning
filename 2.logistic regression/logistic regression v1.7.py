@@ -29,7 +29,8 @@ def sigmoid(z):
 
 def cost(theta, X, Y):
     return np.mean(
-        -Y * np.log(sigmoid(X @ theta)) - (1 - Y) * np.log(sigmoid(X @ theta)))
+        -Y * np.log(sigmoid(X @ theta)) - (1 - Y) * np.log(
+            1 - sigmoid(X @ theta)))
 
 
 def gradient(theta, X, Y):
@@ -70,6 +71,56 @@ def regularized_gradient(theta, X, y, l=1):
     return gradient(theta, X, y) + regularized_term
 
 
+def find_decision_boundary(density, power, theta, threshhold):
+    t1 = np.linspace(-1, 1.5, density)
+    t2 = np.linspace(-1, 1.5, density)
+
+    cordinates = [(x, y) for x in t1 for y in t2]
+    x_cord, y_cord = zip(*cordinates)
+    mapped_cord = feature_mapping(x_cord, y_cord, power)  # this is a dataframe
+
+    inner_product = mapped_cord.to_numpy() @ theta
+
+    decision = mapped_cord[np.abs(inner_product) < threshhold]
+
+    return decision.f10, decision.f01
+
+
+def feature_mapped_logistic_regression(power, l):
+    df = pd.read_csv('ex2data2.txt', names=['test1', 'test2', 'accepted'])
+    x1 = np.array(df.test1)
+    x2 = np.array(df.test2)
+    y = get_Y(df)
+
+    X = feature_mapping(x1, x2, power, as_ndarray=True)
+    theta = np.zeros(X.shape[1])
+
+    res = opt.minimize(fun=regularized_cost,
+                       x0=theta,
+                       args=(X, y, l),
+                       method='TNC',
+                       jac=regularized_gradient)
+    final_theta = res.x
+
+    return final_theta
+
+
+def draw_boundary(power, l):
+    density = 1000
+    threshhold = 2 * 10 ** -3
+
+    final_theta = feature_mapped_logistic_regression(power, l)
+    x, y = find_decision_boundary(density, power, final_theta, threshhold)
+
+    df = pd.read_csv('ex2data2.txt', names=['test1', 'test2', 'accepted'])
+    sns.lmplot('test1', 'test2', hue='accepted', data=df, height=6, fit_reg=False,
+               scatter_kws={"s": 100})
+
+    plt.scatter(x, y, c='R', s=10)
+    plt.title('Decision boundary')
+    plt.show()
+
+
 def main():
     df = pd.read_csv("ex2data2.txt", names=['test1', 'test2', 'accepted'])
 
@@ -97,7 +148,8 @@ def main():
     theta = np.zeros(data.shape[1])
     X = feature_mapping(x1, x2, power=6, as_ndarray=True)
     print(X.shape)
-    Y = get_Y(data)
+    Y = get_Y(df)
+    print(Y)
     print(Y.shape)
     res = opt.minimize(fun=regularized_cost, x0=theta, args=(X, Y),
                        method='Newton-CG', jac=regularized_gradient)
@@ -106,6 +158,8 @@ def main():
     final_theta = res.x
     y_pred = predict(X, final_theta)
     print(classification_report(Y, y_pred))
+
+    draw_boundary(6, 1)
 
 
 if __name__ == '__main__':
